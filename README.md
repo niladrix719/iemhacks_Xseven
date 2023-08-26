@@ -35,6 +35,31 @@ Go to the project directory
   cd iemhacks_Xseven
 ```
 
+Go to the client directory
+
+```bash
+  cd client
+```
+
+Install dependencies
+
+```bash
+  npm install
+```
+
+Start the client
+
+```bash
+  npm run dev
+```
+
+Go to the server directory
+
+```bash
+  cd ..
+  cd server
+```
+
 Install dependencies
 
 ```bash
