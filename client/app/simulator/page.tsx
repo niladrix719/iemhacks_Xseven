@@ -1,69 +1,101 @@
 'use client'
-import React, { useEffect, useRef } from 'react';
+
+import React, { useEffect, useRef, useState } from 'react';
 
 function App() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const boxRef = useRef<HTMLDivElement>(null);
-  const isClicked = useRef<boolean>(false);
-  const coords = useRef<{
-    startX: number,
-    startY: number,
-    lastX: number,
-    lastY: number
-  }>({
-    startX: 0,
-    startY: 0,
-    lastX: 0,
-    lastY: 0
-  });
+  const activeBoxRef = useRef<number | null>(null);
+  const prevMousePos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  const [shapes, setShapes] = useState<{
+    id: number;
+    type: 'square' | 'circle' | 'triangle';
+    left: number;
+    top: number;
+  }[]>([]);
+  const shapeIdCounter = useRef<number>(0);
 
   useEffect(() => {
-    if (!boxRef.current || !containerRef.current) return;
+    if (!containerRef.current) return;
 
-    const box = boxRef.current;
     const container = containerRef.current;
 
-    const onMouseDown = (e: MouseEvent) => {
-      isClicked.current = true;
-      coords.current.startX = e.clientX;
-      coords.current.startY = e.clientY;
+    const onMouseDown = (e: MouseEvent, shapeId: number) => {
+      activeBoxRef.current = shapeId;
+      prevMousePos.current = { x: e.clientX, y: e.clientY };
     };
 
-    const onMouseUp = (e: MouseEvent) => {
-      isClicked.current = false;
-      coords.current.lastX = box.offsetLeft;
-      coords.current.lastY = box.offsetTop;
+    const onMouseUp = () => {
+      activeBoxRef.current = null;
     };
 
     const onMouseMove = (e: MouseEvent) => {
-      if (!isClicked.current) return;
+      if (activeBoxRef.current === null) return;
 
-      const nextX = e.clientX - coords.current.startX + coords.current.lastX;
-      const nextY = e.clientY - coords.current.startY + coords.current.lastY;
+      const newShapes = shapes.map((shape) => {
+        if (shape.id === activeBoxRef.current) {
+          const deltaX = e.clientX - prevMousePos.current.x;
+          const deltaY = e.clientY - prevMousePos.current.y;
 
-      box.style.top = `${nextY}px`;
-      box.style.left = `${nextX}px`;
+          const nextLeft = shape.left + deltaX;
+          const nextTop = shape.top + deltaY;
+
+          prevMousePos.current = { x: e.clientX, y: e.clientY };
+
+          return { ...shape, left: nextLeft, top: nextTop };
+        }
+        return shape;
+      });
+
+      setShapes(newShapes);
     };
 
-    box.addEventListener('mousedown', onMouseDown);
-    box.addEventListener('mouseup', onMouseUp);
-    container.addEventListener('mousemove', onMouseMove);
-    container.addEventListener('mouseleave', onMouseUp);
+    container.addEventListener('mousedown', (e) => {
+      const clickedShape = e.target as HTMLElement;
+      const shapeId = parseInt(clickedShape.dataset.shapeId || '', 10);
+      if (!isNaN(shapeId)) {
+        onMouseDown(e, shapeId);
+      }
+    });
+
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mousemove', onMouseMove);
 
     const cleanup = () => {
-      box.removeEventListener('mousedown', onMouseDown);
-      box.removeEventListener('mouseup', onMouseUp);
-      container.removeEventListener('mousemove', onMouseMove);
-      container.removeEventListener('mouseleave', onMouseUp);
+      // container.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('mousemove', onMouseMove);
     };
 
     return cleanup;
-  }, []);
+  }, [shapes]);
+
+  const addShape = (shapeType: 'square' | 'circle' | 'triangle') => {
+    const newShape = {
+      id: shapeIdCounter.current++,
+      type: shapeType,
+      left: 0,
+      top: 0,
+    };
+    setShapes([...shapes, newShape]);
+  };
 
   return (
     <main>
       <div ref={containerRef} className="h-screen w-screen bg-white overflow-hidden relative">
-        <div ref={boxRef} className="h-40 w-40 bg-red-600 absolute cursor-pointer"></div>
+        {shapes.map((shape) => (
+          <div
+            key={shape.id}
+            data-shape-id={shape.id}
+            className={`h-40 w-40 absolute cursor-pointer ${shape.type === 'circle' ? 'rounded-full' : ''}`}
+            style={{ top: `${shape.top}px`, left: `${shape.left}px`, backgroundColor: 'red' }}
+          ></div>
+        ))}
+      </div>
+      <div>
+        <button onClick={() => addShape('square')}>Add Square</button>
+        <button onClick={() => addShape('circle')}>Add Circle</button>
+        <button onClick={() => addShape('triangle')}>Add Triangle</button>
       </div>
     </main>
   );
