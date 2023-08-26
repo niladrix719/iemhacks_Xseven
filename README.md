@@ -1,34 +1,53 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Team Xseven
 
-## Getting Started
+- [@niladrix719](https://github.com/niladrix719)
 
-First, run the development server:
+- [@moumasardarx719](https://github.com/moumasardarx719)
+
+
+# Problem Statement
+
+Engineers, students, and hobbyists frequently encounter challenges when
+collaborating on circuit design and analysis in real-time. Existing circuit
+simulation tools lack collaborative features, making it difficult for multiple users
+to work together effectively. The lack of synchronization and a user-friendly interface hinders productive collaboration. There is a need for a collaborative
+circuit simulator that overcomes these limitations.
+
+# Proposed Solution
+
+Develop a real-time collaborative circuit simulator using Socket.io, Next.js, Tailwind CSS, and
+TypeScript. This platform will allow multiple users to design, modify, and simulate electronic
+circuits simultaneously in a shared workspace. Key features include real-time
+synchronization, an intuitive user interface, and circuit simulation.
+
+
+## Run Locally
+
+Clone the project
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
+  git clone https://github.com/niladrix719/iemhacks_Xseven.git
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Go to the project directory
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+  cd iemhacks_Xseven
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Install dependencies
 
-## Learn More
+```bash
+  npm install
+```
 
-To learn more about Next.js, take a look at the following resources:
+Start the server
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+  npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Next.js, Typescript, TailwindCSS, Socket.io, Nodejs, Expressjs, MongoDB
