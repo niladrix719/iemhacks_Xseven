@@ -26,41 +26,30 @@ function App() {
     const container = containerRef.current;
     const canvas = canvasRef.current;
 
-    // Set canvas size to match the container size
     canvas.width = container.clientWidth;
     canvas.height = container.clientHeight;
 
     const context = canvas.getContext("2d");
 
     if (!context) return;
-
-    // Function to draw the canvas
     const drawCanvas = () => {
       context.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw X and Y axis lines
       context.strokeStyle = "gray";
 
-      // Number of X and Y axis lines
-      const numXLines = 10; // Adjust as needed
-      const numYLines = 10; // Adjust as needed
+      const numXLines = canvas.width / gridSize;
+      const numYLines = canvas.height / gridSize;
 
-      // Spacing between X and Y axis lines
-      const xSpacing = canvas.width / (numXLines + 1);
-      const ySpacing = canvas.height / (numYLines + 1);
-
-      // Draw X axis lines
-      for (let i = 1; i <= numXLines; i++) {
-        const x = i * xSpacing;
+      for (let i = 0; i <= numXLines; i++) {
+        const x = i * gridSize;
         context.beginPath();
         context.moveTo(x, 0);
         context.lineTo(x, canvas.height);
         context.stroke();
       }
 
-      // Draw Y axis lines
-      for (let i = 1; i <= numYLines; i++) {
-        const y = i * ySpacing;
+      for (let i = 0; i <= numYLines; i++) {
+        const y = i * gridSize;
         context.beginPath();
         context.moveTo(0, y);
         context.lineTo(canvas.width, y);
@@ -68,7 +57,6 @@ function App() {
       }
     };
 
-    // Initial canvas draw
     drawCanvas();
 
     const onMouseDown = (e: MouseEvent, shapeId: number) => {
@@ -81,34 +69,33 @@ function App() {
     };
 
     const onMouseMove = (e: MouseEvent) => {
-  if (activeBoxRef.current === null) return;
+      if (activeBoxRef.current === null) return;
 
-  const newShapes = shapes.map((shape) => {
-    if (shape.id === activeBoxRef.current) {
-      const deltaX = e.clientX - prevMousePos.current.x;
-      const deltaY = e.clientY - prevMousePos.current.y;
+      const newShapes = shapes.map((shape) => {
+        if (shape.id === activeBoxRef.current) {
+          const deltaX = e.clientX - prevMousePos.current.x;
+          const deltaY = e.clientY - prevMousePos.current.y;
 
-      // Calculate the new position based on grid points
-      const nextLeft = Math.round((shape.left + deltaX) / gridSize) * gridSize;
-      const nextTop = Math.round((shape.top + deltaY) / gridSize) * gridSize;
+          const nextLeft = Math.round((shape.left + deltaX) / gridSize) * gridSize;
+          const nextTop = Math.round((shape.top + deltaY) / gridSize) * gridSize;
 
-      // Calculate the new width and height based on grid spacing
-      const widthDiff = Math.round(shape.width / gridSize);
-      const heightDiff = Math.round(shape.height / gridSize);
+          const widthDiff = Math.round(shape.width / gridSize);
+          const heightDiff = Math.round(shape.height / gridSize);
 
-      return {
-        ...shape,
-        left: nextLeft,
-        top: nextTop,
-        width: widthDiff * gridSize, // Adjust width to align with the grid
-        height: heightDiff * gridSize, // Adjust height to align with the grid
-      };
-    }
-    return shape;
-  });
+          return {
+            ...shape,
+            left: nextLeft,
+            top: nextTop,
+            width: widthDiff * gridSize,
+            height: heightDiff * gridSize,
+          };
+        }
+        return shape;
+      });
 
-  setShapes(newShapes);
-};
+      setShapes(newShapes);
+      prevMousePos.current = { x: e.clientX, y: e.clientY };
+    };
 
     container.addEventListener("mousedown", (e) => {
       const clickedShape = e.target as HTMLElement;
@@ -129,7 +116,7 @@ function App() {
     return cleanup;
   }, [shapes]);
 
-  const gridSize = 40; // Adjust as needed based on your grid spacing
+  const gridSize = 40;
 
   const addShape = (shapeType: "square" | "circle" | "triangle") => {
     const newShape = {
@@ -141,7 +128,6 @@ function App() {
       height: gridSize,
     };
 
-    // Snap the new shape to the nearest (x, y) point on the grid
     const snapX = Math.round(newShape.left / gridSize) * gridSize;
     const snapY = Math.round(newShape.top / gridSize) * gridSize;
 
@@ -163,7 +149,7 @@ function App() {
           <div
             key={shape.id}
             data-shape-id={shape.id}
-            className={`h-40 w-40 absolute cursor-pointer ${
+            className={`h-20 w-20 absolute cursor-pointer ${
               shape.type === "circle" ? "rounded-full" : ""
             }`}
             style={{
