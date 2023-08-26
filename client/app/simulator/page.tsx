@@ -100,29 +100,25 @@ function App() {
 
     drawCanvas();
 
-    const onMouseDown = (e: MouseEvent, shapeId: number) => {
-      if (e.target instanceof HTMLElement) {
-        const dotId = parseInt(e.target.dataset.dotId || "", 10);
-        console.log(dotId, "");
-        if (!isNaN(dotId) && dotId === shapeId) {
-          setDraggingLine({
-            startX: e.clientX,
-            startY: e.clientY,
-            endX: e.clientX,
-            endY: e.clientY,
-          });
-          activeDotRef.current = shapeId;
-          return;
+    const onMouseDown = (e: MouseEvent, shapeId: number, dotId: number) => {
+      if (dotId === shapeId) {
+        e.stopPropagation();
+        activeDotRef.current = shapeId;
+        setDraggingLine({
+          startX: e.clientX,
+          startY: e.clientY,
+          endX: e.clientX,
+          endY: e.clientY,
+        });
+      } else {
+        activeBoxRef.current = shapeId;
+        const clickedShape = shapes.find((shape) => shape.id === shapeId);
+        if (clickedShape) {
+          const offsetX = e.clientX - clickedShape.left;
+          const offsetY = e.clientY - clickedShape.top;
+          clickedShape.offsetX = offsetX;
+          clickedShape.offsetY = offsetY;
         }
-      }
-
-      activeBoxRef.current = shapeId;
-      const clickedShape = shapes.find((shape) => shape.id === shapeId);
-      if (clickedShape) {
-        const offsetX = e.clientX - clickedShape.left;
-        const offsetY = e.clientY - clickedShape.top;
-        clickedShape.offsetX = offsetX;
-        clickedShape.offsetY = offsetY;
       }
     };
 
@@ -131,14 +127,14 @@ function App() {
         return;
 
       if (draggingLine && activeDotRef.current !== null) {
-        const fromId = shapes.find(
+        const fromId = activeDotRef.current;
+        const toId = shapes.find(
           (shape) =>
-            shape.left + 10 === draggingLine.startX &&
-            shape.top + 10 === draggingLine.startY
+            shape.left + 10 === draggingLine.endX &&
+            shape.top + 10 === draggingLine.endY
         )?.id;
-        const toId = activeDotRef.current;
 
-        if (fromId && fromId !== toId) {
+        if (fromId && toId) {
           setConnections([...connections, { from: fromId, to: toId }]);
         }
 
@@ -167,43 +163,47 @@ function App() {
     };
 
     const onMouseMove = (e: MouseEvent) => {
-      if (activeBoxRef.current === null) return;
+      if (activeBoxRef.current === null && activeDotRef.current === null)
+        return;
 
-      const newShapes = shapes.map((shape) => {
-        if (shape.id === activeBoxRef.current) {
-          const left = e.clientX - shape.offsetX!;
-          const top = e.clientY - shape.offsetY!;
-
-          return {
-            ...shape,
-            left,
-            top,
-          };
+      if (activeDotRef.current !== null) {
+        if (draggingLine) {
+          setDraggingLine({
+            ...draggingLine,
+            endX: e.clientX,
+            endY: e.clientY,
+          });
         }
-        return shape;
-      });
+      } else {
+        const newShapes = shapes.map((shape) => {
+          if (shape.id === activeBoxRef.current) {
+            const left = e.clientX - shape.offsetX!;
+            const top = e.clientY - shape.offsetY!;
 
-      setShapes(newShapes);
-
-      if (draggingLine) {
-        setDraggingLine({
-          startX: draggingLine.startX,
-          startY: draggingLine.startY,
-          endX: e.clientX,
-          endY: e.clientY,
+            return {
+              ...shape,
+              left,
+              top,
+            };
+          }
+          return shape;
         });
+
+        setShapes(newShapes);
       }
     };
 
-    container.addEventListener("mousedown", (e) => {
-      const clickedShape = e.target as HTMLElement;
-      const shapeId = parseInt(clickedShape.dataset.shapeId || "", 10);
-      const dotId = parseInt(clickedShape.dataset.dotId || "", 10);
-      if (!isNaN(shapeId) || !isNaN(dotId)) {
-        const clickedShapeId = !isNaN(dotId) ? dotId : shapeId;
-        onMouseDown(e, clickedShapeId);
-      }
-    });
+    if (containerRef.current) {
+      containerRef.current?.addEventListener("mousedown", (e) => {
+        const clickedShape = e.target as HTMLElement;
+        const shapeId = parseInt(clickedShape.dataset.shapeId || "", 10);
+        const dotId = parseInt(clickedShape.dataset.dotId || "", 10);
+        if (!isNaN(shapeId) || !isNaN(dotId)) {
+          const clickedShapeId = !isNaN(dotId) ? dotId : shapeId;
+          onMouseDown(e, clickedShapeId, dotId);
+        }
+      });
+    }
 
     window.addEventListener("mouseup", onMouseUp);
     window.addEventListener("mousemove", onMouseMove);
@@ -231,10 +231,10 @@ function App() {
     <main>
       <div
         ref={containerRef}
-        className="h-screen w-screen bg-white overflow-hidden relative"
+        className="h-screen w-screen bg-black overflow-hidden relative"
         style={{ cursor: activeBoxRef.current ? "grabbing" : "grab" }}
       >
-        <canvas ref={canvasRef} className="absolute inset-0"></canvas>
+        <canvas ref={canvasRef} className="absolute bg-black inset-0"></canvas>
         {shapes.map((shape) => (
           <div
             key={shape.id}
